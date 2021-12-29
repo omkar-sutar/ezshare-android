@@ -35,17 +35,15 @@ public class ReceiveActivity0 extends AppCompatActivity {
     private int port;
     private boolean socketCreatedFlag=false;
     private boolean cancel=false;
-    private SocketCreationTask socketCreationTask;
-    private FileReceiveTask fileReceiveTask;
-    private Handler UiHandler=null;
+    private String fileReceptionState="NotStarted";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_receive0);
-        createUiHandler();
-        SocketCreationThread t=new SocketCreationThread();
-        t.start();
+        SocketCreationThread socketCreationThread=new SocketCreationThread();
+        socketCreationThread.start();
+
         //Create socket skr
 //        socketCreationTask=new SocketCreationTask();
 //        fileReceiveTask=new FileReceiveTask();
@@ -54,22 +52,8 @@ public class ReceiveActivity0 extends AppCompatActivity {
 
     }
 
-    private void createUiHandler() {
-        UiHandler=new Handler(Looper.getMainLooper()){
-            @Override
-            public void handleMessage(Message msg){
-                Log.i("mymsg","here");
-            }
-        };
-    }
-
     public void onButtonCancelClick(View view){
-        toast(this,"Reception cancelled");
         Log.i("mymsg","Reception cancelled");
-        socketCreationTask.cancel(true);
-        fileReceiveTask.cancel(true);
-        socketCreationTask=null;
-        fileReceiveTask=null;
         try{
             skr.close();
         }
@@ -78,6 +62,7 @@ public class ReceiveActivity0 extends AppCompatActivity {
         }
         finish();
     }
+
     public static void toast(Context context, String msg){
         Toast.makeText(context,msg,Toast.LENGTH_SHORT).show();
     }
@@ -110,7 +95,9 @@ public class ReceiveActivity0 extends AppCompatActivity {
                     TextView textViewIP=findViewById(R.id.textViewIP);
                     textViewIP.setText(hostIP);
                     TextView textViewPort=findViewById(R.id.textViewPort);
-                    textViewPort.setText(port);
+                    textViewPort.setText(String.valueOf(port));
+                    FileReceptionThread fileReceptionThread=new FileReceptionThread();
+                    fileReceptionThread.start();
                 }
             });
 
@@ -119,107 +106,59 @@ public class ReceiveActivity0 extends AppCompatActivity {
             //msg.what=RECEIVE_SOCKET_CREATED_UPDATE_UI;
             //UiHandler.sendMessage(msg);
         }
-    };
-
-    private class SocketCreationTask extends AsyncTask<Void, Void, Boolean>{
-
-        @Override
-        protected Boolean doInBackground(Void... voids) {
-            Log.i("mymsg","Socket Creation started");
-            try {
-                skr=new SocketRecv();
-            } catch (Exception e) {
-                e.printStackTrace();
-                Log.i("mymsg",e.getMessage());
-                return false;
-            }
-            Log.i("mymsg","socketCreated");
-            try {
-                WifiManager wm = (WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
-                hostIP= Formatter.formatIpAddress(wm.getConnectionInfo().getIpAddress());
-                port=skr.getHostPort();
-                Log.i("mymsg",hostIP);
-            } catch (Exception e) {
-                e.printStackTrace();
-                return false;
-            }
-            socketCreatedFlag=true;
-            return true;
-        }
-
-        @Override
-        protected void onCancelled(Boolean aBoolean) {
-            super.onCancelled(aBoolean);
-            Log.i("mymsg","SocketCreationTaskCancelled");
-        }
-
-        @SuppressLint("SetTextI18n")
-        @Override
-        protected void onPostExecute(Boolean result){
-            if(!result) return;
-            TextView textViewIP=findViewById(R.id.textViewIP);
-            TextView textViewPort=findViewById(R.id.textViewPort);
-            textViewIP.setText("Ipv4: " + hostIP);
-            textViewPort.setText("Port: " + port);
-        }
     }
 
+    private class FileReceptionThread extends Thread{
+      @Override
+      public void run(){
+          try {
+              skr.accept();
+          } catch (Exception e) {
+              e.printStackTrace();
+              return;
+          }
+          String filename;
+          byte[] buffer = new byte[1000000];
+          int bytesReceived=0;
+          File path=Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+          try {
+              DataInputStream dataInputStream=skr.getDataInputStream();
+              //get filename
+              filename=dataInputStream.readUTF();
+              File file=new File(path,filename);
+              try {
+                  boolean res=file.createNewFile();
+                  if(!res){
 
-
-    private class FileReceiveTask extends AsyncTask<Void,Void,Boolean>{
-
-        @Override
-        protected Boolean doInBackground(Void... voids) {
-            try {
-                skr.accept();
-            } catch (Exception e) {
-                e.printStackTrace();
-                return false;   //Task failed
-            }
-            String filename;
-            byte[] buffer = new byte[1000000];
-            int bytesReceived=0;
-            File path=Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-            try {
-                DataInputStream dataInputStream=skr.getDataInputStream();
-                //get filename
-                filename=dataInputStream.readUTF();
-                File file=new File(path,filename);
-                try {
-                    file.createNewFile();
-                } catch (Exception e){};
-                FileOutputStream fileOutputStream=new FileOutputStream(file,false);
-                while(true){
-                    bytesReceived=dataInputStream.read(buffer);
-                    if(bytesReceived==-1) break;
-                    else if(bytesReceived!=1000000){
-                        fileOutputStream.write(Arrays.copyOf(buffer,bytesReceived));
-                        fileOutputStream.flush();
-                    }
-                    else{
-                        fileOutputStream.write(buffer);
-                    }
-                }
-                fileOutputStream.close();
-                Log.i("mymsg",path.getPath());
-            } catch (Exception e) {
-                e.printStackTrace();
-                Log.i("mymsg",e.getMessage());
-            }
-            return true;
-        }
-
-        @Override
-        protected void onCancelled(Boolean aBoolean) {
-            super.onCancelled(aBoolean);
-            Log.i("mymsg","FileReceieveTaskCancelled");
-        }
-
-        @Override
-        protected void onPostExecute(Boolean aBoolean) {
-            boolean flag=aBoolean;
-            if(!flag) return;
-
-        }
+                      return;
+                  }
+              } catch (Exception e){
+                  e.printStackTrace();
+                  return;
+              }
+              FileOutputStream fileOutputStream=new FileOutputStream(file,false);
+              while(true){
+                  bytesReceived=dataInputStream.read(buffer);
+                  if(bytesReceived==-1) break;
+                  else if(bytesReceived!=1000000){
+                      fileOutputStream.write(Arrays.copyOf(buffer,bytesReceived));
+                      fileOutputStream.flush();
+                  }
+                  else{
+                      fileOutputStream.write(buffer);
+                  }
+              }
+              fileOutputStream.close();
+              Log.i("mymsg",path.getPath());
+              runOnUiThread(new Runnable() {
+                  @Override
+                  public void run() {
+                      toast(getApplicationContext(),"File received");
+                  }
+              });
+          } catch (Exception e) {
+              e.printStackTrace();
+          }
+      }
     }
 }
