@@ -32,6 +32,7 @@ public class ReceiveActivity0 extends AppCompatActivity {
     private int port;
     private boolean socketCreatedFlag=false;
     private boolean cancel=false;
+    private String receptionState="notStarted";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -48,14 +49,41 @@ public class ReceiveActivity0 extends AppCompatActivity {
     }
 
     public void onButtonCancelClick(View view){
-        Log.i("mymsg","Reception cancelled");
-        try{
-            skr.close();
+        if(receptionState.equals("started")){
+            AlertDialog.Builder builder=new AlertDialog.Builder(ReceiveActivity0.this);
+            builder.setTitle("Cancel Receiving");
+            builder.setMessage("Do you want to cancel the receiving?");
+            builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    try{
+                        skr.close();
+                    }
+                    catch (Exception e){
+                        Log.i("mymsg","Socket Close Exception");
+                    }
+                    finish();
+                }
+            });
+            builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    //Continue reception/Do nothing
+                    return;
+                }
+            });
+            builder.show();
         }
-        catch (Exception e){
-            Log.i("mymsg","Socket Close Exception");
+        else if(receptionState.equals("notStarted") || receptionState.equals("finished")){
+            try{
+                skr.close();
+            }
+            catch (Exception e){
+                Log.i("mymsg","Socket Close Exception");
+            }
+            finish();
         }
-        finish();
+
     }
 
     public static void toast(Context context, String msg){
@@ -170,6 +198,7 @@ public class ReceiveActivity0 extends AppCompatActivity {
               });
               float megaBytesReceived=0;
               float totalMegaBytes=Float.parseFloat(fileSize);
+              receptionState="started";
               while(true){
                   try{
                       bytesReceived=dataInputStream.read(buffer);
@@ -198,6 +227,7 @@ public class ReceiveActivity0 extends AppCompatActivity {
                   }
               }
               fileOutputStream.close();
+              receptionState="finished";
               updateProgress(totalMegaBytes,totalMegaBytes);
               runOnUiThread(new Runnable() {
                   @SuppressLint("SetTextI18n")
