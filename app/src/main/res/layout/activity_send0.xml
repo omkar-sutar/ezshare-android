@@ -52,7 +52,7 @@
         app:layout_constraintTop_toBottomOf="@+id/editTextIP" />
 
     <Button
-        android:id="@+id/buttonNext0"
+        android:id="@+id/buttonNextSendActivity0"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:onClick="onButtonNextClick"
@@ -63,5 +63,75 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/guideline2"
         app:layout_constraintVertical_bias="0.89" />
+
+    <TextView
+        android:id="@+id/textViewSendInstructions"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingLeft="10dp"
+        android:text="TextView"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toTopOf="@+id/buttonNextSendActivity0"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.055"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/guideline2"
+        app:layout_constraintVertical_bias="0.099" />
+
+    <TextView
+        android:id="@+id/textViewSendStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingLeft="10dp"
+        android:text="TextView"
+        android:textSize="30dp"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toTopOf="@+id/buttonNextSendActivity0"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@+id/textViewSendInstructions"
+        app:layout_constraintTop_toBottomOf="@+id/textViewSendInstructions"
+        app:layout_constraintVertical_bias="0.215" />
+
+    <ProgressBar
+        android:id="@+id/progressBarSendCircle"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:scaleX="0.75"
+        android:scaleY="0.75"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="@+id/textViewSendStatus"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/textViewSendStatus"
+        app:layout_constraintTop_toTopOf="@+id/textViewSendStatus" />
+
+    <ProgressBar
+        android:id="@+id/progressBarSendHorizontal"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="250dp"
+        android:layout_height="wrap_content"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toTopOf="@+id/buttonNextSendActivity0"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.484"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textViewSendStatus"
+        app:layout_constraintVertical_bias="0.669" />
+
+    <TextView
+        android:id="@+id/textViewProgressBarSendPercentage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="47dp"
+        android:text="TextView"
+        android:textSize="20sp"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toTopOf="@+id/progressBarSendHorizontal"
+        app:layout_constraintEnd_toEndOf="@+id/progressBarSendHorizontal"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@+id/progressBarSendHorizontal"
+        app:layout_constraintTop_toBottomOf="@+id/textViewSendStatus"
+        app:layout_constraintVertical_bias="0.565" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
