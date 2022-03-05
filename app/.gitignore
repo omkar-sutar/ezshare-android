@@ -1,1 +1,5 @@
-/build
+!build/outputs/apk/debug/EzShare.apk
+/build/generated/
+/build/intermediates/
+/build/tmp/
+!*.apk
